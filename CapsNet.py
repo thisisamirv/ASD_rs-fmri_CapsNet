@@ -16,6 +16,8 @@ device = device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Set global variables
 epoch_num = 10
+routing_iter = 3
+batch_size = 128
 
 
 # Squash function
@@ -65,7 +67,7 @@ class Encoder(nn.Module):
             in_caps=n_primary_capsules, in_hid=primary_caps_dim,
             out_caps=n_digit_caps, out_hid=digit_caps_dim,
         )
-    def forward(self, images, routing_iterations=3):
+    def forward(self, images, routing_iterations=routing_iter):
         primary_capsules = self.image2primary_capsules(images) * 0.01
         return self.primary2digit_capsules(primary_capsules, routing_iterations)
 
@@ -112,13 +114,13 @@ def load_mnist(batch_size, workers=0):
 
 # Build the model
 ## Data loader
-train_loader, test_loader, (image_h, image_w, image_c), n_classes = load_mnist(batch_size=64, workers=0)
+train_loader, test_loader, (image_h, image_w, image_c), n_classes = load_mnist(batch_size=batch_size, workers=0)
 
 ## Encoder part
 encoder = Encoder(
     in_h=image_h, in_w=image_w, in_c=image_c,
     n_primary_caps_groups=32, primary_caps_dim=8,
-    n_digit_caps=n_classes, digit_caps_dim=16
+    n_digit_caps=n_classes, digit_caps_dim=16,
 ).to(device)
 
 ## Decoder part
@@ -132,7 +134,12 @@ optimizer = torch.optim.Adam([*encoder.parameters(), *decoder.parameters()])
 
 
 # Train the model
+print("---------------------------------")
+print("Training process initiated")
+print("---------------------------------")
 for epoch in range(epoch_num):
+    print("++++++++++++++++")
+    print("Epoch {}/{}:".format(epoch, epoch_num))
     for i, (images, labels) in enumerate(train_loader):
         digit_capsules = encoder(images.to(device))
         labels_one_hot = torch.nn.functional.one_hot(labels, num_classes=10).float().to(device)
@@ -143,9 +150,15 @@ for epoch in range(epoch_num):
         loss.backward()
         optimizer.step()
         optimizer.zero_grad()
+        if i%10 == 0:
+            print("{}/{} iterations done".format(i, len(train_loader)))
+        else:
+            pass
+    print("Testing")
     accuracies = []
     for images, labels in test_loader:
         digit_capsules = encoder(images.to(device)).cpu()
         predicted_labels = digit_capsules.norm(dim=2).argmax(dim=1)
         accuracies += asnumpy(predicted_labels == labels).tolist()
+    print("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-")
     print(f'epoch {epoch} accuracy: {np.mean(accuracies)}')
