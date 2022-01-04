@@ -12,6 +12,12 @@ from einops import rearrange, reduce, asnumpy
 
 # Set device
 device = device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("CUDA version: {}".format(torch.version.cuda))
+print("Number of CUDA devices: {}".format(torch.cuda.device_count()))
+print("Current device is CUDA: {}".format(torch.cuda.is_available()))
+print("Current device #num: {}".format(torch.cuda.current_device()))
+print("Current device spec: {}".format(torch.cuda.device(0)))
+print("Current device name: {}".format(torch.cuda.get_device_name(0)))
 
 
 # Set global variables
