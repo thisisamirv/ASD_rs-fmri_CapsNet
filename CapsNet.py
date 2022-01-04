@@ -145,7 +145,7 @@ print("Training process initiated")
 print("---------------------------------")
 for epoch in range(epoch_num):
     print("++++++++++++++++")
-    print("Epoch {}/{}:".format(epoch, epoch_num))
+    print("epoch {}/{}:".format(epoch, epoch_num))
     for i, (images, labels) in enumerate(train_loader):
         digit_capsules = encoder(images.to(device))
         labels_one_hot = torch.nn.functional.one_hot(labels, num_classes=10).float().to(device)
@@ -156,7 +156,7 @@ for epoch in range(epoch_num):
         loss.backward()
         optimizer.step()
         optimizer.zero_grad()
-        if i%10 == 0:
+        if i%150 == 0:
             print("{}/{} iterations done".format(i, len(train_loader)))
         else:
             pass
@@ -166,5 +166,4 @@ for epoch in range(epoch_num):
         digit_capsules = encoder(images.to(device)).cpu()
         predicted_labels = digit_capsules.norm(dim=2).argmax(dim=1)
         accuracies += asnumpy(predicted_labels == labels).tolist()
-    print("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-")
     print(f'epoch {epoch} accuracy: {np.mean(accuracies)}')
