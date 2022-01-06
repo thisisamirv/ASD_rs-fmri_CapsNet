@@ -142,10 +142,9 @@ optimizer = torch.optim.Adam([*encoder.parameters(), *decoder.parameters()])
 # Train the model
 print("---------------------------------")
 print("Training process initiated")
-print("---------------------------------")
 for epoch in range(epoch_num):
     print("++++++++++++++++")
-    print("epoch {}/{}:".format(epoch, epoch_num))
+    print("epoch {}/{}:".format(epoch+1, epoch_num))
     for i, (images, labels) in enumerate(train_loader):
         digit_capsules = encoder(images.to(device))
         labels_one_hot = torch.nn.functional.one_hot(labels, num_classes=10).float().to(device)
@@ -166,4 +165,4 @@ for epoch in range(epoch_num):
         digit_capsules = encoder(images.to(device)).cpu()
         predicted_labels = digit_capsules.norm(dim=2).argmax(dim=1)
         accuracies += asnumpy(predicted_labels == labels).tolist()
-    print(f'epoch {epoch} accuracy: {np.mean(accuracies)}')
+    print(f'epoch {epoch+1} accuracy: {np.mean(accuracies)}')
